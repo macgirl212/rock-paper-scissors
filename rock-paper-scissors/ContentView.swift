@@ -8,9 +8,9 @@
 import SwiftUI
 
 enum Choices: String, CaseIterable {
-    case rock = "rock"
-    case paper = "paper"
-    case scissors = "scissors"
+    case rock = "🪨"
+    case paper = "📃"
+    case scissors = "✂️"
 }
 
 struct ContentView: View {
@@ -25,21 +25,29 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
+            LinearGradient(colors: [Color(red: 0.38, green: 0.52, blue: 0.85), .white], startPoint: .top, endPoint: .bottom)
             VStack {
+                Spacer()
                 HStack {
                     Spacer()
                     Text("Score: \(score)")
+                        .padding(10)
                 }
                 Spacer()
                 Section {
-                    Text("Computer chooses")
-                    Text(compChoice.rawValue.uppercased())
+                    Text("Computer chooses:")
+                    Text(compChoice.rawValue)
+                        .font(.system(size: 60))
                 }
                 Spacer()
                 Section {
                     Text("To")
                     Text(winOrLose ? "win".uppercased() : "lose".uppercased())
-                    Text("Please choose")
+                        .font(.largeTitle)
+                        .bold()
+                        .foregroundColor(winOrLose ? .green : .red)
+                        .padding(5)
+                    Text("Please choose:")
                     Picker("Game Choices", selection: $playerChoice) {
                         ForEach(Choices.allCases, id: \.self) {
                             Text($0.rawValue)
@@ -48,10 +56,13 @@ struct ContentView: View {
                     .pickerStyle(.segmented)
                 }
                 Spacer()
-                Button("Enter") {
+                Button("Submit") {
                     let wasWon = verifyHands(compChoice: compChoice, playerChoice: playerChoice, gameCondition: winOrLose)
                     adjustScore(wasWon)
                 }
+                .padding()
+                .background(.white)
+                .buttonBorderShape(.roundedRectangle)
                 Spacer()
             }
             .alert(scoreTitle, isPresented: $showScoreAlert) {
@@ -62,16 +73,17 @@ struct ContentView: View {
             } message: {
                 Text("Your final score is \(score).")
             }
-        }
+        } .ignoresSafeArea()
     }
     
     func adjustScore(_ wasWon: Bool) {
+        // if round was won, add one point, or else subtract one point
         if wasWon {
             score += 1
-            scoreTitle = "Congratulations!"
+            scoreTitle = "👏 Congratulations! 👏"
         } else {
             score -= 1
-            scoreTitle = "Sorry, that was incorrect."
+            scoreTitle = "😑 Mmm... Let's try this again."
         }
         
         showScoreAlert = true
@@ -80,10 +92,12 @@ struct ContentView: View {
     }
     
     func playRound() {
+        // randomize all game states for next round
         compChoice = Choices.allCases[Int.random(in: 0...2)]
         winOrLose = Bool.random()
         playerChoice = .paper
         
+        // if 10 games were completed, show the final score alert
         if completedRounds == 10 {
             showFinalScoreAlert = true
         }
@@ -97,6 +111,7 @@ struct ContentView: View {
 
 func verifyHands(compChoice: Choices, playerChoice: Choices, gameCondition playerToWin: Bool) -> Bool {
     if playerToWin {
+        // if player should win, they need to pick...
         switch compChoice {
         case .rock:
             return playerChoice == .paper
@@ -106,6 +121,7 @@ func verifyHands(compChoice: Choices, playerChoice: Choices, gameCondition playe
             return playerChoice == .rock
         }
     } else {
+        // if player should lose, they need to pick...
         switch compChoice {
         case .rock:
             return playerChoice == .scissors
@@ -116,7 +132,6 @@ func verifyHands(compChoice: Choices, playerChoice: Choices, gameCondition playe
         }
     }
 }
-
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
